@@ -1,161 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Nedits AI — Dark</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<title>Nedits AI — Demo</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
   :root{
-    --bg:#0c0e12; --panel:#11141a; --elev:#141823;
-    --muted:#6b7280; --text:#e5e7eb;
+    --bg:#0b0d11; --panel:#0f1419; --muted:#93a0b3; --text:#e6eef8;
     --accent:#7c3aed; --accent-2:#22d3ee;
-    --ring: rgba(124,58,237,.35);
   }
-  *{box-sizing:border-box} body,html{margin:0;height:100%}
-  body{display:flex;flex-direction:column;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif}
-  header{background:#111;padding:12px 16px;display:flex;align-items:center;gap:10px}
-  header .logo{width:28px;height:28px;border-radius:8px;background:conic-gradient(from 200deg,var(--accent),var(--accent-2),var(--accent))}
-  #chat{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
-  .bubble{display:flex;gap:10px;max-width:800px}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+  body{background:
+    radial-gradient(900px 500px at 10% -10%, rgba(124,58,237,.08), transparent 40%),
+    radial-gradient(700px 400px at 110% 10%, rgba(34,211,238,.06), transparent 40%),
+    var(--bg);
+    color:var(--text); display:flex; flex-direction:column;}
+  header{
+    display:flex; align-items:center; gap:12px; padding:14px 16px;
+    background:linear-gradient(180deg, rgba(12,14,18,.8), rgba(12,14,18,.6));
+    border-bottom:1px solid rgba(124,58,237,.12); position:sticky; top:0; z-index:20;
+  }
+  .logo{width:36px;height:36px;border-radius:9px;background:conic-gradient(from 200deg,var(--accent),var(--accent-2),var(--accent));box-shadow:0 6px 24px rgba(124,58,237,.12)}
+  .brand{font-weight:700}
+  .sub{color:var(--muted); font-size:13px}
+  .controls{margin-left:auto; display:flex; gap:8px; align-items:center}
+  .controls input[type="text"]{background:transparent;border:1px solid rgba(255,255,255,.06);color:var(--text);padding:8px 10px;border-radius:8px;width:260px}
+  .controls button{background:linear-gradient(135deg,var(--accent),#5b21b6);border:none;padding:8px 12px;border-radius:8px;color:white;cursor:pointer}
+  main{flex:1; overflow:auto;padding:20px; display:flex; flex-direction:column; gap:12px; align-items:flex-start}
+  .bubble{display:flex; gap:12px; max-width:880px; width:100%;}
   .bubble.right{margin-left:auto;flex-direction:row-reverse}
-  .avatar{width:32px;height:32px;border-radius:50%;background:#1f2433;display:grid;place-items:center}
-  .msg{padding:12px 14px;border-radius:12px;background:var(--panel);border:1px solid rgba(124,58,237,.2);white-space:pre-wrap;overflow-wrap:anywhere}
-  .bubble.right .msg{background:linear-gradient(160deg,rgba(124,58,237,.18),rgba(34,211,238,.12))}
-  .composer{padding:12px;background:#111;display:flex;gap:8px}
-  textarea{flex:1;resize:none;min-height:44px;background:var(--elev);color:var(--text);border:none;border-radius:8px;padding:10px}
-  button{padding:10px 16px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer}
-  .dot{width:6px;height:6px;border-radius:50%;background:#a5b4fc;animation:blink 1.2s infinite ease-in-out}
-  .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+  .avatar{width:36px;height:36px;border-radius:10px;background:#0b1116;display:grid;place-items:center;border:1px solid rgba(255,255,255,.03);font-weight:700;color:var(--muted)}
+  .avatar.ai{background:linear-gradient(160deg,#0f1620,#091018); color:#cfe8ff}
+  .msg{padding:12px 14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,.01), rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.03);white-space:pre-wrap;word-break:break-word; color:var(--text)}
+  .bubble.right .msg{background:linear-gradient(160deg, rgba(124,58,237,.12), rgba(34,211,238,.06)); border:1px solid rgba(124,58,237,.18)}
+  .typing-dots{display:flex;gap:6px}
+  .dot{width:7px;height:7px;border-radius:50%;background:#b8c7ff;opacity:.5;animation:blink 1.2s infinite}
+  .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
   @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+  .composer{position:sticky; bottom:0; background:linear-gradient(180deg, rgba(11,13,17,.2), rgba(11,13,17,.95)); padding:14px; border-top:1px solid rgba(124,58,237,.06); display:flex; gap:10px; align-items:flex-end}
+  textarea{flex:1; min-height:54px; max-height:240px; resize:none; padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.04); background:linear-gradient(180deg,#0b1116,#0b1014); color:var(--text); font-size:15px}
+  .send{padding:12px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),#5b21b6); color:white;font-weight:700;cursor:pointer}
+  .small{font-size:13px;color:var(--muted)}
+  .center-note{max-width:920px;margin:0 auto;text-align:center;color:var(--muted);font-size:13px;margin-top:6px}
+  @media (max-width:760px){
+    .controls input[type="text"]{display:none}
+    main{padding:12px}
+  }
 </style>
 </head>
 <body>
+
 <header>
-  <div class="logo"></div><b>Nedits AI</b>
+  <div class="logo" aria-hidden="true"></div>
+  <div>
+    <div class="brand">Nedits AI</div>
+    <div class="sub">Your Nedits Edition assistant — explain services, guide customers</div>
+  </div>
+
+  <div class="controls">
+    <!-- Optional: user can paste API key here for quick testing -->
+    <input id="apiKeyInput" type="text" placeholder="Paste Groq API key (or leave and set API_KEY in code)" />
+    <button id="clearBtn">Clear</button>
+  </div>
 </header>
 
-<main id="chat"></main>
+<main id="chat" aria-live="polite"></main>
 
 <div class="composer">
-  <textarea id="input" placeholder="Type your message… (Enter to send)"></textarea>
-  <button id="sendBtn">Send</button>
+  <textarea id="input" placeholder="Type your message… (Enter to send, Shift+Enter for newline)"></textarea>
+  <button class="send" id="sendBtn">Send ▸</button>
 </div>
 
+<div class="center-note">Demo only — frontend calls the API directly. For production, use a backend to keep API keys secret.</div>
+
 <script>
-  const API_KEY = "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"; 
-  const API_URL = "https://api.groq.com/openai/v1/chat/completions";
-  const chatEl = document.getElementById("chat");
-  const inputEl = document.getElementById("input");
-  const sendBtn = document.getElementById("sendBtn");
+/* =========================
+   CONFIG — Paste your key here for local testing,
+   or paste into the top input field in the header.
+   ========================= */
+const API_KEY = "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"; // <<< Paste your Groq key here for convenience (OR use header input)
+const API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-  function addBubble(role,text){
-    const wrap=document.createElement("div");
-    wrap.className="bubble"+(role==="user"?" right":"");
-    const avatar=document.createElement("div");
-    avatar.className="avatar"; avatar.textContent=(role==="user"?"You":"AI");
-    const msg=document.createElement("div");
-    msg.className="msg"; msg.textContent=text;
-    wrap.appendChild(avatar);wrap.appendChild(msg);
-    chatEl.appendChild(wrap);chatEl.scrollTop=chatEl.scrollHeight;
-    return msg;
-  }
-  function addTyping(){
-    const wrap=document.createElement("div");wrap.className="bubble";
-    const avatar=document.createElement("div");avatar.className="avatar";avatar.textContent="AI";
-    const msg=document.createElement("div");msg.className="msg";
-    msg.innerHTML='<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
-    wrap.appendChild(avatar);wrap.appendChild(msg);
-    chatEl.appendChild(wrap);chatEl.scrollTop=chatEl.scrollHeight;
-    return wrap;
-  }
+/* =========================
+   SYSTEM PROMPT — Nedits assistant behaviour
+   (Do not change unless you want different behavior)
+   ========================= */
+const SYSTEM_PROMPT = `You are Nedits AI, a professional assistant created and developed by the Nedits Edition team. The owner of Nedits Edition is Nishit, and the brand is built with the support of a skilled team. Your primary role is to help customers clearly understand the services offered by Nedits Edition, guide them with the right solutions, and respond in a professional, friendly, and helpful way.
 
-  async function sendMessage(){
-    const text=inputEl.value.trim(); if(!text) return;
-    addBubble("user",text); inputEl.value="";
-
-    const typing=addTyping();
-    try{
-      const res=await fetch(API_URL,{
-        method:"POST",
-        headers:{"Authorization":"Bearer "+API_KEY,"Content-Type":"application/json"},
-        body:JSON.stringify({
-          model:"llama-3.1-8b-instant",
-          messages:[
-            {
-              role:"system",
-              content:"You are Nedits AI, a professional assistant created and developed by the Nedits Edition team. The owner of Nedits Edition is Nishit, and the brand is built with the support of a skilled team. Your primary role is to help customers clearly understand the services offered by Nedits Edition, guide them with the right solutions, and respond in a professional, friendly, and helpful way.
-
-When asked about your creator, founder, or ownership, always say: 
+When asked about your creator, founder, or ownership, always say:
 "I was created by the Nedits Edition team, and the owner of Nedits Edition is Nishit."
 
 Your main responsibilities:
 1. Clearly explain and summarize the services provided by Nedits Edition in simple, easy-to-understand language.
-2. If a customer asks about solutions for their needs, recommend the right service(s) from the list.
+2. If a customer asks about solutions for their needs, recommend the right service(s) from the list below, and explain why.
 3. Maintain a professional yet approachable tone.
-4. Do not give unrelated or random answers outside the context of Nedits Edition’s services, unless it’s casual small talk.
+4. Keep answers concise but include examples, steps, or next actions when it helps the user.
+5. Do not provide unrelated or random answers outside the context of Nedits Edition’s services unless it is casual small talk.
 
-Here are the categories of services you can talk about:
+Service categories and short descriptions (use these when explaining or recommending):
+- Creative & Visual: Graphic Designing, Motion Graphics, 3D Design & Modeling, Photo Editing & Retouching, UI/UX Design, NFT Art & Web3 Graphics, Interactive PDFs & Digital Brochures, Templates & Presets.
+- Media & Content: Video Editing, Thumbnail & Hook Designing, Podcast Clips & Graphics, Voiceover & Dubbing (AI & human), Text-to-Speech Video Creation.
+- Tech & Development: Website Development, E-commerce Solutions, App Development, Online Course & LMS Setup, Micro SaaS Tools, Sales Funnel Setup, WhatsApp & Chatbot Marketing.
+- Marketing & Growth: Digital Marketing, Social Media Management, Influencer Marketing Management, Email Marketing & Automation, Online Reputation Management, AI Tools Consultancy & Automation, YouTube Channel Setup & Management.
+- Content & Brand Setup: Brand Identity Creation, Content Writing & Copywriting, Event Branding & Digital Collateral, Digital Business Setup (end-to-end).
 
-🎨 Creative & Visual Services  
-- Graphic Designing (branding, flyers, posters, brand kits)  
-- Motion Graphics (animated videos, logo intros, kinetic typography)  
-- 3D Design & Modeling (mockups, architecture, product design)  
-- Photo Editing & Retouching (professional edits, enhancements)  
-- UI/UX Design (modern app/website interfaces, prototypes)  
-- NFT Art & Web3 Graphics (unique NFTs, Web3 visuals)  
-- Interactive PDFs & Digital Brochures (clickable portfolios, client proposals)  
-- Templates & Presets Creation (for Canva, Photoshop, Lightroom, etc.)
+Always answer in a clear, professional, and customer-friendly tone. Prioritize clarity and actionable guidance.`;
 
-🎥 Media & Content Services  
-- Video Editing (YouTube, Instagram, ads, promos)  
-- Thumbnail & Hook Designing (catchy thumbnails, strong video hooks)  
-- Podcast Clips & Graphics (viral clips, branded audiograms)  
-- Voiceover & Dubbing (AI + human voices, multilingual)  
-- Text-to-Speech Video Creation (AI voice with visuals & animations)
+/* =========================
+   UI helpers
+   ========================= */
+const chatEl = document.getElementById('chat');
+const inputEl = document.getElementById('input');
+const sendBtn = document.getElementById('sendBtn');
+const clearBtn = document.getElementById('clearBtn');
+const apiKeyInput = document.getElementById('apiKeyInput');
 
-🌐 Tech & Development Services  
-- Website Development (responsive, SEO-friendly, business websites)  
-- E-commerce Solutions (Shopify, WooCommerce, custom stores)  
-- App Development (Android/iOS apps with smooth UI/UX)  
-- Online Course & LMS Setup (student dashboards, video hosting, quizzes)  
-- Micro SaaS Tools (QR generators, calculators, useful web tools)  
-- Sales Funnel Setup (landing pages, email follow-ups, upsells)  
-- WhatsApp & Chatbot Marketing (automation for sales & support)
+function addBubble(role, text, options = {}) {
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble' + (role === 'user' ? ' right' : '');
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar ' + (role === 'ai' ? 'ai' : '');
+  avatar.textContent = role === 'user' ? 'You' : 'AI';
+  const msg = document.createElement('div');
+  msg.className = 'msg';
+  if (options.html) msg.innerHTML = options.html;
+  else msg.textContent = text;
+  wrap.appendChild(avatar);
+  wrap.appendChild(msg);
+  chatEl.appendChild(wrap);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return msg;
+}
 
-📈 Marketing & Growth Services  
-- Digital Marketing (paid ads, SEO, lead generation)  
-- Social Media Management (content, engagement, strategy)  
-- Influencer Marketing Management (brand-influencer partnerships)  
-- Email Marketing & Automation (templates, campaigns, automation)  
-- Online Reputation Management (reviews, feedback, brand trust)  
-- AI Tools Consultancy & Automation (AI workflows & productivity setups)  
-- YouTube Channel Setup & Management (branding, SEO, strategy)
+function addTyping() {
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble';
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar ai';
+  avatar.textContent = 'AI';
+  const msg = document.createElement('div');
+  msg.className = 'msg';
+  const dots = document.createElement('div');
+  dots.className = 'typing-dots';
+  dots.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+  msg.appendChild(dots);
+  wrap.appendChild(avatar);
+  wrap.appendChild(msg);
+  chatEl.appendChild(wrap);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return wrap;
+}
 
-✍️ Content & Brand Setup  
-- Brand Identity Creation (logos, color palettes, brand guidelines)  
-- Content Writing & Copywriting (blogs, ad copies, captions, product descriptions)  
-- Event Branding & Digital Collateral (invites, banners, promo designs)  
-- Digital Business Setup (end-to-end brand launch package)
+function normalizeKey(k) {
+  return (k || "").trim();
+}
 
-Always answer in a clear, professional, and customer-friendly tone. Your goal is to represent Nedits Edition as a trusted, modern, and complete business solutions company.'"
-            },
-            {role:"user",content:text}
-          ],
-          stream:false
-        })
-      });
-      const data=await res.json();
-      typing.remove();
-      addBubble("bot",data.choices[0].message.content);
-    }catch(e){
-      typing.remove(); addBubble("bot","⚠️ Error: "+e.message);
-    }
+/* =========================
+   Core: Send message to Groq with system prompt
+   ========================= */
+async function sendMessage() {
+  const text = inputEl.value.trim();
+  if (!text) return;
+  addBubble('user', text);
+  inputEl.value = '';
+  inputEl.style.height = 'auto';
+
+  // Determine API key: constant or header input
+  const key = normalizeKey(apiKeyInput.value) || normalizeKey(API_KEY);
+  if (!key) {
+    alert('Please paste your Groq API key in the header input OR set API_KEY in the code.');
+    return;
   }
 
-  sendBtn.addEventListener("click",sendMessage);
-  inputEl.addEventListener("keydown",e=>{
-    if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}
-  });
+  // Add typing indicator
+  const typingNode = addTyping();
+  sendBtn.disabled = true;
 
-  addBubble("bot","👋 Welcome to Nedits AI! Ask me anything.");
+  try {
+    const body = {
+      model: "llama-3.1-8b-instant",
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: text }
+      ],
+      temperature: 0.6,
+      stream: false
+    };
+
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      typingNode.remove();
+      addBubble('ai', `⚠️ API error ${res.status}: ${res.statusText}\n${errText}`);
+      sendBtn.disabled = false;
+      return;
+    }
+    const data = await res.json();
+    typingNode.remove();
+
+    // Safety: robust path to get assistant text
+    const assistantText = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.message?.text || JSON.stringify(data);
+    addBubble('ai', assistantText);
+  } catch (err) {
+    typingNode.remove();
+    addBubble('ai', `⚠️ Network error: ${err.message}`);
+  } finally {
+    sendBtn.disabled = false;
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+}
+
+/* =========================
+   Events
+   ========================= */
+sendBtn.addEventListener('click', sendMessage);
+inputEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+clearBtn.addEventListener('click', () => {
+  chatEl.innerHTML = '';
+  addBubble('ai', '👋 Welcome to Nedits AI — I can explain services, recommend solutions, and guide next steps.');
+});
+
+/* initial welcome */
+addBubble('ai', '👋 Welcome to Nedits AI — I can explain Nedits Edition services, recommend the right solutions, and guide you on next steps. Ask me anything about your project or services.');
+
 </script>
+</body>
+</html>
