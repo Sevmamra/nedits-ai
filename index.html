@@ -2,94 +2,105 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Nedits AI — Demo</title>
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<style>
-  :root{
-    --bg:#0b0d11; --panel:#0f1419; --muted:#93a0b3; --text:#e6eef8;
-    --accent:#7c3aed; --accent-2:#22d3ee;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
-  body{
-    background:
-      radial-gradient(900px 500px at 10% -10%, rgba(124,58,237,.08), transparent 40%),
-      radial-gradient(700px 400px at 110% 10%, rgba(34,211,238,.06), transparent 40%),
-      var(--bg);
-    color:var(--text); display:flex; flex-direction:column;
-  }
-  header{
-    display:flex; align-items:center; gap:12px; padding:14px 16px;
-    background:linear-gradient(180deg, rgba(12,14,18,.8), rgba(12,14,18,.6));
-    border-bottom:1px solid rgba(124,58,237,.12); position:sticky; top:0; z-index:20;
-  }
-  .logo{width:36px;height:36px;border-radius:9px;
-    background:conic-gradient(from 200deg,var(--accent),var(--accent-2),var(--accent));
-    box-shadow:0 6px 24px rgba(124,58,237,.12)}
-  .brand{font-weight:700;font-size:16px}
-  .sub{color:var(--muted); font-size:13px}
-  main{flex:1; overflow:auto;padding:20px; display:flex; flex-direction:column; gap:12px; align-items:flex-start}
-  .bubble{display:flex; gap:12px; max-width:880px; width:100%;}
-  .bubble.right{margin-left:auto;flex-direction:row-reverse}
-  .avatar{width:36px;height:36px;border-radius:10px;background:#0b1116;
-    display:grid;place-items:center;border:1px solid rgba(255,255,255,.03);
-    font-weight:700;color:var(--muted)}
-  .avatar.ai{background:linear-gradient(160deg,#0f1620,#091018); color:#cfe8ff}
-  .msg{padding:12px 14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,.01), rgba(255,255,255,.02));
-    border:1px solid rgba(255,255,255,.03);white-space:pre-wrap;word-break:break-word; color:var(--text)}
-  .bubble.right .msg{background:linear-gradient(160deg, rgba(124,58,237,.12), rgba(34,211,238,.06)); border:1px solid rgba(124,58,237,.18)}
-  .typing-dots{display:flex;gap:6px}
-  .dot{width:7px;height:7px;border-radius:50%;background:#b8c7ff;opacity:.5;animation:blink 1.2s infinite}
-  .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
-  @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
-  .composer{position:sticky; bottom:0; background:linear-gradient(180deg, rgba(11,13,17,.2), rgba(11,13,17,.95));
-    padding:14px; border-top:1px solid rgba(124,58,237,.06); display:flex; gap:10px; align-items:flex-end}
-  textarea{flex:1; min-height:54px; max-height:240px; resize:none; padding:12px;border-radius:10px;
-    border:1px solid rgba(255,255,255,.04); background:linear-gradient(180deg,#0b1116,#0b1014);
-    color:var(--text); font-size:15px}
-  .send{padding:12px 16px;border-radius:10px;border:none;
-    background:linear-gradient(135deg,var(--accent),#5b21b6); color:white;font-weight:700;cursor:pointer;transition:all .2s}
-  .send:hover{opacity:0.9; transform:translateY(-1px)}
-  .center-note{max-width:920px;margin:0 auto;text-align:center;color:var(--muted);
-    font-size:12px;margin:8px 0 14px}
-  @media (max-width:760px){ main{padding:12px} }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Nedits AI — Interactive Demo</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
   <div class="logo" aria-hidden="true"></div>
-  <div>
+  <div class="brand-container">
     <div class="brand">Nedits AI</div>
-    <div class="sub">Your Nedits Edition assistant — guiding customers</div>
+    <div class="sub">Your Nedits Edition assistant — guiding customers professionally</div>
   </div>
 </header>
 
+<!-- CHAT WINDOW -->
 <main id="chat" aria-live="polite"></main>
 
+<!-- COMPOSER -->
 <div class="composer">
   <textarea id="input" placeholder="Type your message… (Enter to send, Shift+Enter for newline)"></textarea>
   <button class="send" id="sendBtn">Send ▸</button>
 </div>
 
-<div class="center-note">Powered by Nedits Edition — AI Demo</div>
+<!-- FOOTER / NOTE -->
+<div class="center-note">Demo — Powered by Nedits Edition. For production, integrate with backend to secure API keys.</div>
 
+<!-- SCRIPT -->
 <script>
-const API_KEY = "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"; 
+/* =========================
+   CONFIGURATION
+   ========================= */
+const API_KEY = "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";
 const API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-const SYSTEM_PROMPT = `You are Nedits AI, ... (same system prompt as before)`;
+/* =========================
+   SYSTEM PROMPT: Full Services Knowledge
+   ========================= */
+const SYSTEM_PROMPT = `
+You are Nedits AI, a professional assistant representing Nedits Edition. The owner of Nedits Edition is Nishit. You have deep knowledge of all the services offered below and must explain, recommend, and guide customers in a professional, friendly, and detailed way.
 
+🎨 Creative & Visual Services
+1. Graphic Designing: Eye-catching designs for brands including social media posts, flyers, posters, business cards, brochures, and brand kits.
+2. Motion Graphics: Animated videos, logo intros, kinetic typography, visual effects.
+3. 3D Design & Modeling: Realistic 3D models, product mockups, architecture visualization.
+4. Photo Editing & Retouching: Background removal, retouching, color correction, image enhancement.
+5. UI/UX Design: Wireframes, interactive prototypes, modern web/app interfaces.
+6. NFT Art & Web3 Graphics: Unique NFT artworks, digital collectibles, Web3 visuals.
+7. Interactive PDFs & Digital Brochures: Clickable PDFs with buttons, links, animations.
+8. Templates & Presets Creation: Templates for Canva, Photoshop, Lightroom, video editing.
+
+🎥 Media & Content Services
+1. Video Editing: YouTube, Instagram, ads, promotional content with smooth transitions and premium visuals.
+2. Thumbnail & Hook Designing: Attractive thumbnails, engaging hooks.
+3. Podcast Clips & Graphics: Short viral clips, branded audiograms.
+4. Voiceover & Dubbing (AI & Human): Professional voiceovers in multiple languages.
+5. Text-to-Speech Video Creation: Videos using AI voices, visuals, animations, stock footage.
+
+🌐 Tech & Development Services
+1. Website Development: Clean, responsive, SEO-friendly websites.
+2. E-commerce Solutions: Shopify, WooCommerce, custom stores with payment integration.
+3. App Development: Android/iOS apps with modern UI/UX.
+4. Online Course & LMS Setup: Video hosting, student dashboards, quizzes, payments.
+5. Micro SaaS Tools Development: Small software tools like QR code generators, calculators, bio links.
+6. Sales Funnel Setup: Landing pages, lead capture forms, email follow-ups, upsells.
+7. WhatsApp & Chatbot Marketing: Automated WhatsApp marketing systems, chatbots for support and lead generation.
+
+📈 Marketing & Growth Services
+1. Digital Marketing: Paid ads, lead generation, SEO strategies, online campaigns.
+2. Social Media Management: Content creation, posting, engagement, strategy planning.
+3. Influencer Marketing Management: Collaborations, campaign management.
+4. Email Marketing & Automation: Email templates, sequences, automation.
+5. Online Reputation Management (ORM): Monitor and manage reviews, feedback, engagement.
+6. AI Tools Consultancy & Automation: Setup automated workflows, guide on AI tools.
+7. YouTube Channel Setup & Management: Branding, content planning, SEO, full channel management.
+
+✍️ Content & Brand Setup
+1. Brand Identity Creation: Logos, color palettes, typography, brand guidelines.
+2. Content Writing & Copywriting: Blogs, website content, ad copies, product descriptions.
+3. Event Branding & Digital Collateral: Digital materials for online/offline events.
+4. Digital Business Setup (Business-in-a-Box): Branding, website, content, social media setup, marketing plans.
+`;
+
+/* =========================
+   UI REFERENCES
+   ========================= */
 const chatEl = document.getElementById('chat');
 const inputEl = document.getElementById('input');
 const sendBtn = document.getElementById('sendBtn');
 
+/* =========================
+   FUNCTIONS: Chat bubbles
+   ========================= */
 function addBubble(role, text) {
   const wrap = document.createElement('div');
-  wrap.className = 'bubble' + (role === 'user' ? ' right' : '');
+  wrap.className = 'bubble' + (role==='user' ? ' right' : '');
   const avatar = document.createElement('div');
-  avatar.className = 'avatar ' + (role === 'ai' ? 'ai' : '');
-  avatar.textContent = role === 'user' ? 'You' : 'AI';
+  avatar.className = 'avatar ' + (role==='ai'?'ai':'');
+  avatar.textContent = role==='user'?'You':'AI';
   const msg = document.createElement('div');
   msg.className = 'msg';
   msg.textContent = text;
@@ -97,77 +108,14 @@ function addBubble(role, text) {
   wrap.appendChild(msg);
   chatEl.appendChild(wrap);
   chatEl.scrollTop = chatEl.scrollHeight;
+  return msg;
 }
 
-function addTyping() {
-  const wrap = document.createElement('div');
-  wrap.className = 'bubble';
-  const avatar = document.createElement('div');
-  avatar.className = 'avatar ai';
-  avatar.textContent = 'AI';
-  const msg = document.createElement('div');
-  msg.className = 'msg';
-  const dots = document.createElement('div');
-  dots.className = 'typing-dots';
-  dots.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
-  msg.appendChild(dots);
-  wrap.appendChild(avatar);
-  wrap.appendChild(msg);
-  chatEl.appendChild(wrap);
-  chatEl.scrollTop = chatEl.scrollHeight;
-  return wrap;
-}
-
-async function sendMessage() {
-  const text = inputEl.value.trim();
-  if (!text) return;
-  addBubble('user', text);
-  inputEl.value = '';
-  inputEl.style.height = 'auto';
-
-  if (!API_KEY) {
-    addBubble('ai', '⚠️ API key missing. Please set your API_KEY in the code.');
-    return;
-  }
-
-  const typingNode = addTyping();
-  sendBtn.disabled = true;
-
-  try {
-    const body = {
-      model: "llama-3.1-8b-instant",
-      messages: [{ role: "system", content: SYSTEM_PROMPT },{ role: "user", content: text }],
-      temperature: 0.6
-    };
-
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Authorization': `Bearer ${API_KEY}`,'Content-Type': 'application/json'},
-      body: JSON.stringify(body)
-    });
-
-    const data = await res.json();
-    typingNode.remove();
-    const assistantText = data?.choices?.[0]?.message?.content || "⚠️ No response";
-    addBubble('ai', assistantText);
-  } catch (err) {
-    typingNode.remove();
-    addBubble('ai', `⚠️ Network error: ${err.message}`);
-  } finally {
-    sendBtn.disabled = false;
-    chatEl.scrollTop = chatEl.scrollHeight;
-  }
-}
-
-sendBtn.addEventListener('click', sendMessage);
-inputEl.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-});
-
-addBubble('ai', '👋 Welcome to Nedits AI — I can explain Nedits Edition services, recommend solutions, and guide you.');
+/* =========================
+   INITIAL WELCOME
+   ========================= */
+addBubble('ai','👋 Welcome to Nedits AI — Ask me about any Nedits Edition service and I will guide you professionally.');
 </script>
+
 </body>
 </html>
