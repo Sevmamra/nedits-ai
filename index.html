@@ -417,21 +417,21 @@
 <main id="chat" aria-live="polite"></main>
 
 <div class="composer">
-  <textarea id="input" placeholder="Type your message…" rows="1"></textarea>
+  <textarea id="input" placeholder="Type your message… (Enter to send, Shift+Enter for newline)" rows="1"></textarea>
   <button class="send" id="sendBtn">
     <i class="fas fa-paper-plane"></i>
   </button>
 </div>
 
-<div class="footer-note">Nedits AI Assistant</div>
+<div class="footer-note">Nedits AI Assistant — For official use only</div>
 
 <script>
 /* =========================
-   CONFIG
+   CONFIG - OpenAI API
    ========================= */
-const API_KEY = "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"; // Your API key here
-const API_URL = "https://api.groq.com/openai/v1/chat/completions";
-const DEFAULT_MODEL = "llama-3.1-8b-instant";
+const API_KEY = "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"; // Replace with your OpenAI API key
+const API_URL = "https://api.openai.com/v1/responses";
+const DEFAULT_MODEL = "gpt-4o-mini"; // You can change to "gpt-4" if you have access
 
 /* =========================
    SYSTEM PROMPT
@@ -638,13 +638,12 @@ function setDarkTheme() {
 function addToHistory(role, content) {
   conversationHistory.push({
     role,
-    content,
-    timestamp: new Date().toISOString()
+    content
   });
   
-  // Keep only last 50 messages to prevent storage overflow
-  if (conversationHistory.length > 50) {
-    conversationHistory = conversationHistory.slice(-50);
+  // Keep only last 20 messages to prevent storage overflow
+  if (conversationHistory.length > 20) {
+    conversationHistory = conversationHistory.slice(-20);
   }
   
   localStorage.setItem('nedits_ai_history', JSON.stringify(conversationHistory));
@@ -667,7 +666,7 @@ function clearHistory() {
 }
 
 /* =========================
-   CORE CHAT FUNCTIONALITY
+   CORE CHAT FUNCTIONALITY - OpenAI API
    ========================= */
 async function sendMessage() {
   const text = inputEl.value.trim();
@@ -685,16 +684,20 @@ async function sendMessage() {
   addTyping();
   
   try {
+    // Prepare messages for API - system prompt + conversation history
     const messages = [
       { role: "system", content: SYSTEM_PROMPT },
-      ...conversationHistory.map(msg => ({ role: msg.role, content: msg.content }))
+      ...conversationHistory.map(msg => ({ 
+        role: msg.role === 'ai' ? 'assistant' : msg.role, 
+        content: msg.content 
+      }))
     ];
     
     const body = {
       model: DEFAULT_MODEL,
       messages: messages,
-      temperature: 0.6,
-      stream: false
+      temperature: 0.7,
+      max_tokens: 1000
     };
     
     const res = await fetch(API_URL, {
@@ -707,22 +710,21 @@ async function sendMessage() {
     });
     
     if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`API error ${res.status}: ${res.statusText} - ${errText}`);
+      const errorData = await res.json();
+      throw new Error(`API error ${res.status}: ${errorData.error?.message || res.statusText}`);
     }
     
     const data = await res.json();
-    const assistantText = data?.choices?.[0]?.message?.content || 
-                         data?.choices?.[0]?.message?.text || 
-                         'Sorry, I could not generate a response.';
+    const assistantText = data.choices[0].message.content;
     
     removeTyping();
     const aiMsg = addBubble('ai', assistantText);
-    addToHistory('ai', assistantText);
+    addToHistory('assistant', assistantText);
     
   } catch (err) {
     removeTyping();
     addBubble('ai', `Error: ${err.message}`);
+    console.error('API Error:', err);
   } finally {
     sendBtn.disabled = false;
   }
