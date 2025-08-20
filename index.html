@@ -2,120 +2,793 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Nedits AI — Interactive Demo</title>
-<link rel="stylesheet" href="style.css">
+<title>Nedits AI — Official Assistant</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --bg: #0b0d11; --panel: #0f1419; --muted: #93a0b3; --text: #e6eef8;
+    --accent: #7c3aed; --accent-2: #22d3ee;
+    --user-bubble: linear-gradient(160deg, rgba(124,58,237,.12), rgba(34,211,238,.06));
+    --ai-bubble: linear-gradient(180deg, rgba(255,255,255,.01), rgba(255,255,255,.02));
+    --success: #10b981; --error: #ef4444; --warning: #f59e0b;
+  }
+  
+  [data-theme="light"] {
+    --bg: #f8fafc; --panel: #ffffff; --muted: #64748b; --text: #1e293b;
+    --user-bubble: linear-gradient(160deg, rgba(124,58,237,.08), rgba(34,211,238,.04));
+    --ai-bubble: linear-gradient(180deg, rgba(0,0,0,.01), rgba(0,0,0,.02));
+  }
+  
+  * { box-sizing: border-box; margin: 0; padding: 0 }
+  
+  body {
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+    background:
+      radial-gradient(900px 500px at 10% -10%, rgba(124,58,237,.08), transparent 40%),
+      radial-gradient(700px 400px at 110% 10%, rgba(34,211,238,.06), transparent 40%),
+      var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  
+  /* Header Styles */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: linear-gradient(180deg, rgba(12,14,18,.8), rgba(12,14,18,.6));
+    border-bottom: 1px solid rgba(124,58,237,.12);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    backdrop-filter: blur(10px);
+  }
+  
+  .logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: conic-gradient(from 200deg, var(--accent), var(--accent-2), var(--accent));
+    box-shadow: 0 6px 24px rgba(124,58,237,.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+  }
+  
+  .brand-container {
+    flex: 1;
+  }
+  
+  .brand {
+    font-weight: 700;
+    font-size: 18px;
+  }
+  
+  .sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 2px;
+  }
+  
+  .controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  
+  .btn {
+    background: linear-gradient(135deg, var(--accent), #5b21b6);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    transition: all 0.2s ease;
+  }
+  
+  .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(124,58,237,.2);
+  }
+  
+  .btn.btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.1);
+    color: var(--text);
+  }
+  
+  .theme-toggle {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.1);
+    color: var(--text);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  
+  /* Main Chat Area */
+  main {
+    flex: 1;
+    overflow: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+    scroll-behavior: smooth;
+  }
+  
+  .bubble {
+    display: flex;
+    gap: 12px;
+    max-width: 880px;
+    width: 100%;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  .bubble.right {
+    margin-left: auto;
+    flex-direction: row-reverse;
+  }
+  
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #0b1116;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.03);
+    font-weight: 700;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  
+  .avatar.ai {
+    background: linear-gradient(160deg, #0f1620, #091018);
+    color: #cfe8ff;
+  }
+  
+  .msg {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--ai-bubble);
+    border: 1px solid rgba(255,255,255,.03);
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  
+  .bubble.right .msg {
+    background: var(--user-bubble);
+    border: 1px solid rgba(124,58,237,.18);
+  }
+  
+  .msg-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  
+  .bubble:hover .msg-actions {
+    opacity: 1;
+  }
+  
+  .msg-action {
+    background: rgba(255,255,255,.08);
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .msg-action:hover {
+    background: rgba(255,255,255,.12);
+  }
+  
+  /* Typing Indicator */
+  .typing-dots {
+    display: flex;
+    gap: 6px;
+    padding: 8px 0;
+  }
+  
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #b8c7ff;
+    opacity: .5;
+    animation: blink 1.2s infinite;
+  }
+  
+  .dot:nth-child(2) { animation-delay: .15s; }
+  .dot:nth-child(3) { animation-delay: .3s; }
+  
+  /* Composer */
+  .composer {
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(11,13,17,.2), rgba(11,13,17,.95));
+    padding: 14px;
+    border-top: 1px solid rgba(124,58,237,.06);
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    backdrop-filter: blur(10px);
+  }
+  
+  textarea {
+    flex: 1;
+    min-height: 54px;
+    max-height: 240px;
+    resize: none;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.04);
+    background: linear-gradient(180deg, #0b1116, #0b1014);
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+  }
+  
+  textarea:focus {
+    outline: none;
+    border-color: rgba(124,58,237,.4);
+    box-shadow: 0 0 0 2px rgba(124,58,237,.1);
+  }
+  
+  .send {
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), #5b21b6);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .send:hover:not(:disabled) {
+    transform: scale(1.05);
+  }
+  
+  .send:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .footer-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 8px;
+    background: rgba(11,13,17,.5);
+  }
+  
+  /* Markdown Styles */
+  .msg h1, .msg h2, .msg h3 {
+    margin: 16px 0 8px 0;
+    color: var(--text);
+  }
+  
+  .msg p {
+    margin: 8px 0;
+  }
+  
+  .msg ul, .msg ol {
+    margin: 8px 0;
+    padding-left: 20px;
+  }
+  
+  .msg li {
+    margin: 4px 0;
+  }
+  
+  .msg code {
+    background: rgba(0,0,0,.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.9em;
+  }
+  
+  .msg pre {
+    background: rgba(0,0,0,.2);
+    padding: 12px;
+    border-radius: 8px;
+    overflow: auto;
+    margin: 12px 0;
+  }
+  
+  .msg pre code {
+    background: transparent;
+    padding: 0;
+  }
+  
+  .msg blockquote {
+    border-left: 3px solid var(--accent);
+    padding-left: 12px;
+    margin: 12px 0;
+    color: var(--muted);
+  }
+  
+  /* Animations */
+  @keyframes blink {
+    0%, 80%, 100% { opacity: .2; }
+    40% { opacity: 1; }
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Responsive */
+  @media (max-width: 760px) {
+    header {
+      padding: 12px;
+    }
+    
+    .brand {
+      font-size: 16px;
+    }
+    
+    .sub {
+      font-size: 12px;
+    }
+    
+    .btn-text {
+      display: none;
+    }
+    
+    main {
+      padding: 12px;
+    }
+    
+    .bubble {
+      max-width: 100%;
+    }
+    
+    .composer {
+      padding: 12px;
+    }
+    
+    .theme-toggle {
+      width: 32px;
+      height: 32px;
+    }
+  }
+  
+  /* Utility Classes */
+  .hidden {
+    display: none !important;
+  }
+  
+  .fade-in {
+    animation: fadeIn 0.3s ease;
+  }
+</style>
 </head>
 <body>
 
-<!-- HEADER -->
 <header>
-  <div class="logo" aria-hidden="true"></div>
+  <div class="logo">N</div>
   <div class="brand-container">
     <div class="brand">Nedits AI</div>
-    <div class="sub">Your Nedits Edition assistant — guiding customers professionally</div>
+    <div class="sub">Your Nedits Edition assistant — explain services, guide customers</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-outline" id="clearBtn">
+      <i class="fas fa-trash"></i>
+      <span class="btn-text">Clear Chat</span>
+    </button>
+    <button class="theme-toggle" id="themeToggle">
+      <i class="fas fa-moon"></i>
+    </button>
   </div>
 </header>
 
-<!-- CHAT WINDOW -->
 <main id="chat" aria-live="polite"></main>
 
-<!-- COMPOSER -->
 <div class="composer">
-  <textarea id="input" placeholder="Type your message… (Enter to send, Shift+Enter for newline)"></textarea>
-  <button class="send" id="sendBtn">Send ▸</button>
+  <textarea id="input" placeholder="Type your message…" rows="1"></textarea>
+  <button class="send" id="sendBtn">
+    <i class="fas fa-paper-plane"></i>
+  </button>
 </div>
 
-<!-- FOOTER / NOTE -->
-<div class="center-note">Demo — Powered by Nedits Edition. For production, integrate with backend to secure API keys.</div>
+<div class="footer-note">Nedits AI Assistant</div>
 
-<!-- SCRIPT -->
 <script>
 /* =========================
-   CONFIGURATION
+   CONFIG
    ========================= */
-const API_KEY = "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";
+const API_KEY = "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"; // Your API key here
 const API_URL = "https://api.groq.com/openai/v1/chat/completions";
+const DEFAULT_MODEL = "llama-3.1-8b-instant";
 
 /* =========================
-   SYSTEM PROMPT: Full Services Knowledge
+   SYSTEM PROMPT
    ========================= */
-const SYSTEM_PROMPT = `
-You are Nedits AI, a professional assistant representing Nedits Edition. The owner of Nedits Edition is Nishit. You have deep knowledge of all the services offered below and must explain, recommend, and guide customers in a professional, friendly, and detailed way.
+const SYSTEM_PROMPT = `You are Nedits AI, a professional assistant created and developed by the Nedits Edition team. The owner of Nedits Edition is Nishit, and the brand is built with the support of a skilled team. Your primary role is to help customers clearly understand the services offered by Nedits Edition, guide them with the right solutions, and respond in a professional, friendly, and helpful way.
 
-🎨 Creative & Visual Services
-1. Graphic Designing: Eye-catching designs for brands including social media posts, flyers, posters, business cards, brochures, and brand kits.
-2. Motion Graphics: Animated videos, logo intros, kinetic typography, visual effects.
-3. 3D Design & Modeling: Realistic 3D models, product mockups, architecture visualization.
-4. Photo Editing & Retouching: Background removal, retouching, color correction, image enhancement.
-5. UI/UX Design: Wireframes, interactive prototypes, modern web/app interfaces.
-6. NFT Art & Web3 Graphics: Unique NFT artworks, digital collectibles, Web3 visuals.
-7. Interactive PDFs & Digital Brochures: Clickable PDFs with buttons, links, animations.
-8. Templates & Presets Creation: Templates for Canva, Photoshop, Lightroom, video editing.
+When asked about your creator, founder, or ownership, always say:
+"I was created by the Nedits Edition team, and the owner of Nedits Edition is Nishit."
 
-🎥 Media & Content Services
-1. Video Editing: YouTube, Instagram, ads, promotional content with smooth transitions and premium visuals.
-2. Thumbnail & Hook Designing: Attractive thumbnails, engaging hooks.
-3. Podcast Clips & Graphics: Short viral clips, branded audiograms.
-4. Voiceover & Dubbing (AI & Human): Professional voiceovers in multiple languages.
-5. Text-to-Speech Video Creation: Videos using AI voices, visuals, animations, stock footage.
+Your main responsibilities:
+1. Clearly explain and summarize the services provided by Nedits Edition in simple, easy-to-understand language.
+2. If a customer asks about solutions for their needs, recommend the right service(s) from the list below, and explain why.
+3. Maintain a professional yet approachable tone.
+4. Keep answers concise but include examples, steps, or next actions when it helps the user.
+5. Do not provide unrelated or random answers outside the context of Nedits Edition's services unless it is casual small talk.
 
-🌐 Tech & Development Services
-1. Website Development: Clean, responsive, SEO-friendly websites.
-2. E-commerce Solutions: Shopify, WooCommerce, custom stores with payment integration.
-3. App Development: Android/iOS apps with modern UI/UX.
-4. Online Course & LMS Setup: Video hosting, student dashboards, quizzes, payments.
-5. Micro SaaS Tools Development: Small software tools like QR code generators, calculators, bio links.
-6. Sales Funnel Setup: Landing pages, lead capture forms, email follow-ups, upsells.
-7. WhatsApp & Chatbot Marketing: Automated WhatsApp marketing systems, chatbots for support and lead generation.
+Service categories and short descriptions (use these when explaining or recommending):
+- Creative & Visual: Graphic Designing, Motion Graphics, 3D Design & Modeling, Photo Editing & Retouching, UI/UX Design, NFT Art & Web3 Graphics, Interactive PDFs & Digital Brochures, Templates & Presets.
+- Media & Content: Video Editing, Thumbnail & Hook Designing, Podcast Clips & Graphics, Voiceover & Dubbing (AI & human), Text-to-Speech Video Creation.
+- Tech & Development: Website Development, E-commerce Solutions, App Development, Online Course & LMS Setup, Micro SaaS Tools, Sales Funnel Setup, WhatsApp & Chatbot Marketing.
+- Marketing & Growth: Digital Marketing, Social Media Management, Influencer Marketing Management, Email Marketing & Automation, Online Reputation Management, AI Tools Consultancy & Automation, YouTube Channel Setup & Management.
+- Content & Brand Setup: Brand Identity Creation, Content Writing & Copywriting, Event Branding & Digital Collateral, Digital Business Setup (end-to-end).
 
-📈 Marketing & Growth Services
-1. Digital Marketing: Paid ads, lead generation, SEO strategies, online campaigns.
-2. Social Media Management: Content creation, posting, engagement, strategy planning.
-3. Influencer Marketing Management: Collaborations, campaign management.
-4. Email Marketing & Automation: Email templates, sequences, automation.
-5. Online Reputation Management (ORM): Monitor and manage reviews, feedback, engagement.
-6. AI Tools Consultancy & Automation: Setup automated workflows, guide on AI tools.
-7. YouTube Channel Setup & Management: Branding, content planning, SEO, full channel management.
-
-✍️ Content & Brand Setup
-1. Brand Identity Creation: Logos, color palettes, typography, brand guidelines.
-2. Content Writing & Copywriting: Blogs, website content, ad copies, product descriptions.
-3. Event Branding & Digital Collateral: Digital materials for online/offline events.
-4. Digital Business Setup (Business-in-a-Box): Branding, website, content, social media setup, marketing plans.
-`;
+Always answer in a clear, professional, and customer-friendly tone. Prioritize clarity and actionable guidance.`;
 
 /* =========================
-   UI REFERENCES
+   STATE MANAGEMENT
+   ========================= */
+let conversationHistory = [];
+let isDarkMode = true;
+
+/* =========================
+   DOM ELEMENTS
    ========================= */
 const chatEl = document.getElementById('chat');
 const inputEl = document.getElementById('input');
 const sendBtn = document.getElementById('sendBtn');
+const clearBtn = document.getElementById('clearBtn');
+const themeToggle = document.getElementById('themeToggle');
 
 /* =========================
-   FUNCTIONS: Chat bubbles
+   INITIALIZATION
    ========================= */
-function addBubble(role, text) {
-  const wrap = document.createElement('div');
-  wrap.className = 'bubble' + (role==='user' ? ' right' : '');
-  const avatar = document.createElement('div');
-  avatar.className = 'avatar ' + (role==='ai'?'ai':'');
-  avatar.textContent = role==='user'?'You':'AI';
-  const msg = document.createElement('div');
-  msg.className = 'msg';
-  msg.textContent = text;
-  wrap.appendChild(avatar);
-  wrap.appendChild(msg);
-  chatEl.appendChild(wrap);
-  chatEl.scrollTop = chatEl.scrollHeight;
-  return msg;
+document.addEventListener('DOMContentLoaded', init);
+
+function init() {
+  loadPreferences();
+  setupEventListeners();
+  addWelcomeMessage();
+}
+
+function loadPreferences() {
+  // Load theme preference
+  const savedTheme = localStorage.getItem('nedits_ai_theme');
+  if (savedTheme === 'light') {
+    setLightTheme();
+  }
+  
+  // Load conversation history
+  const savedHistory = localStorage.getItem('nedits_ai_history');
+  if (savedHistory) {
+    try {
+      conversationHistory = JSON.parse(savedHistory);
+      renderConversationHistory();
+    } catch (e) {
+      console.error('Error loading conversation history:', e);
+    }
+  }
+}
+
+function setupEventListeners() {
+  // Send message
+  sendBtn.addEventListener('click', sendMessage);
+  inputEl.addEventListener('keydown', handleInputKeydown);
+  
+  // Clear chat
+  clearBtn.addEventListener('click', clearHistory);
+  
+  // Theme toggle
+  themeToggle.addEventListener('click', toggleTheme);
+  
+  // Auto-resize textarea
+  inputEl.addEventListener('input', autoResizeTextarea);
 }
 
 /* =========================
-   INITIAL WELCOME
+   UI HELPERS
    ========================= */
-addBubble('ai','👋 Welcome to Nedits AI — Ask me about any Nedits Edition service and I will guide you professionally.');
-</script>
+function addBubble(role, text) {
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble' + (role === 'user' ? ' right' : '');
+  
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar ' + (role === 'ai' ? 'ai' : '');
+  avatar.textContent = role === 'user' ? 'You' : 'AI';
+  
+  const msg = document.createElement('div');
+  msg.className = 'msg';
+  
+  // Simple markdown parsing (bold, italic, lists)
+  const formattedText = simpleMarkdown(text);
+  msg.innerHTML = formattedText;
+  
+  // Add message actions
+  const actions = document.createElement('div');
+  actions.className = 'msg-actions';
+  actions.innerHTML = `
+    <button class="msg-action" onclick="copyToClipboard(this.parentElement.parentElement)">
+      <i class="fas fa-copy"></i> Copy
+    </button>
+  `;
+  msg.appendChild(actions);
+  
+  wrap.appendChild(avatar);
+  wrap.appendChild(msg);
+  chatEl.appendChild(wrap);
+  
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return { wrap, msg };
+}
 
+function addTyping() {
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble';
+  wrap.id = 'typing-indicator';
+  
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar ai';
+  avatar.textContent = 'AI';
+  
+  const msg = document.createElement('div');
+  msg.className = 'msg';
+  
+  const dots = document.createElement('div');
+  dots.className = 'typing-dots';
+  dots.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+  
+  msg.appendChild(dots);
+  wrap.appendChild(avatar);
+  wrap.appendChild(msg);
+  chatEl.appendChild(wrap);
+  
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return wrap;
+}
+
+function removeTyping() {
+  const typingIndicator = document.getElementById('typing-indicator');
+  if (typingIndicator) {
+    typingIndicator.remove();
+  }
+}
+
+function autoResizeTextarea() {
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 240) + 'px';
+}
+
+function simpleMarkdown(text) {
+  // Convert **bold** and *italic*
+  text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  
+  // Convert lists
+  text = text.replace(/^- (.*?)(?=\n|$)/gm, '<li>$1</li>');
+  if (/<li>/.test(text)) {
+    text = text.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+  }
+  
+  // Convert line breaks
+  text = text.replace(/\n/g, '<br>');
+  
+  return text;
+}
+
+/* =========================
+   THEME MANAGEMENT
+   ========================= */
+function toggleTheme() {
+  if (isDarkMode) {
+    setLightTheme();
+  } else {
+    setDarkTheme();
+  }
+}
+
+function setLightTheme() {
+  document.documentElement.setAttribute('data-theme', 'light');
+  themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+  isDarkMode = false;
+  localStorage.setItem('nedits_ai_theme', 'light');
+}
+
+function setDarkTheme() {
+  document.documentElement.removeAttribute('data-theme');
+  themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+  isDarkMode = true;
+  localStorage.setItem('nedits_ai_theme', 'dark');
+}
+
+/* =========================
+   CONVERSATION MANAGEMENT
+   ========================= */
+function addToHistory(role, content) {
+  conversationHistory.push({
+    role,
+    content,
+    timestamp: new Date().toISOString()
+  });
+  
+  // Keep only last 50 messages to prevent storage overflow
+  if (conversationHistory.length > 50) {
+    conversationHistory = conversationHistory.slice(-50);
+  }
+  
+  localStorage.setItem('nedits_ai_history', JSON.stringify(conversationHistory));
+}
+
+function renderConversationHistory() {
+  chatEl.innerHTML = '';
+  conversationHistory.forEach(msg => {
+    addBubble(msg.role, msg.content);
+  });
+}
+
+function clearHistory() {
+  if (confirm('Are you sure you want to clear conversation history?')) {
+    conversationHistory = [];
+    localStorage.removeItem('nedits_ai_history');
+    chatEl.innerHTML = '';
+    addWelcomeMessage();
+  }
+}
+
+/* =========================
+   CORE CHAT FUNCTIONALITY
+   ========================= */
+async function sendMessage() {
+  const text = inputEl.value.trim();
+  if (!text) return;
+  
+  // Add user message to UI and history
+  const userMsg = addBubble('user', text);
+  addToHistory('user', text);
+  
+  inputEl.value = '';
+  inputEl.style.height = 'auto';
+  sendBtn.disabled = true;
+  
+  // Add typing indicator
+  addTyping();
+  
+  try {
+    const messages = [
+      { role: "system", content: SYSTEM_PROMPT },
+      ...conversationHistory.map(msg => ({ role: msg.role, content: msg.content }))
+    ];
+    
+    const body = {
+      model: DEFAULT_MODEL,
+      messages: messages,
+      temperature: 0.6,
+      stream: false
+    };
+    
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`API error ${res.status}: ${res.statusText} - ${errText}`);
+    }
+    
+    const data = await res.json();
+    const assistantText = data?.choices?.[0]?.message?.content || 
+                         data?.choices?.[0]?.message?.text || 
+                         'Sorry, I could not generate a response.';
+    
+    removeTyping();
+    const aiMsg = addBubble('ai', assistantText);
+    addToHistory('ai', assistantText);
+    
+  } catch (err) {
+    removeTyping();
+    addBubble('ai', `Error: ${err.message}`);
+  } finally {
+    sendBtn.disabled = false;
+  }
+}
+
+function handleInputKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function addWelcomeMessage() {
+  addBubble('ai', '👋 Welcome to Nedits AI — I can explain Nedits Edition services, recommend the right solutions, and guide you on next steps. Ask me anything about your project or services.');
+}
+
+function copyToClipboard(msgElement) {
+  const text = msgElement.querySelector('.msg').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Copied to clipboard!', 'success');
+  }).catch(err => {
+    showToast('Failed to copy', 'error');
+  });
+}
+
+function showToast(message, type = 'info') {
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.textContent = message;
+  toast.style.position = 'fixed';
+  toast.style.bottom = '20px';
+  toast.style.right = '20px';
+  toast.style.padding = '10px 20px';
+  toast.style.borderRadius = '6px';
+  toast.style.color = 'white';
+  toast.style.zIndex = '1000';
+  toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+  
+  switch(type) {
+    case 'success':
+      toast.style.background = 'var(--success)';
+      break;
+    case 'error':
+      toast.style.background = 'var(--error)';
+      break;
+    case 'warning':
+      toast.style.background = 'var(--warning)';
+      break;
+    default:
+      toast.style.background = 'var(--accent)';
+  }
+  
+  document.body.appendChild(toast);
+  
+  // Remove toast after 3 seconds
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.5s';
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 500);
+  }, 3000);
+}
+
+// Make functions available globally for HTML onclick handlers
+window.copyToClipboard = copyToClipboard;
+</script>
 </body>
 </html>
