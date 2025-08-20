@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Nedits AI — Dark</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  :root{
+    --bg:#0c0e12;
+    --panel:#11141a;
+    --elev:#141823;
+    --muted:#6b7280;
+    --text:#e5e7eb;
+    --accent:#7c3aed;
+    --accent-2:#22d3ee;
+    --danger:#ef4444;
+    --ring: rgba(124,58,237,.35);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:radial-gradient(1200px 700px at 10% -10%, rgba(124,58,237,.15), transparent 60%),
+              radial-gradient(800px 500px at 110% 10%, rgba(34,211,238,.12), transparent 60%), var(--bg);
+    color:var(--text); font: 15px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+    display:flex; flex-direction:column;
+  }
+
+  /* Top bar */
+  header{
+    position:sticky; top:0; z-index:20;
+    display:flex; align-items:center; gap:12px;
+    padding:14px 16px; background:linear-gradient(180deg, rgba(20,24,35,.85), rgba(20,24,35,.65));
+    backdrop-filter: saturate(140%) blur(10px); border-bottom:1px solid rgba(124,58,237,.2);
+  }
+  .logo{
+    width:34px; height:34px; border-radius:10px;
+    background: conic-gradient(from 200deg, var(--accent), var(--accent-2), var(--accent));
+    box-shadow: 0 0 28px rgba(124,58,237,.35), inset 0 0 18px rgba(34,211,238,.25);
+  }
+  .brand{font-weight:700; letter-spacing:.3px}
+  .hint{color:var(--muted); font-size:12px}
+
+  /* Controls row */
+  .controls{margin-left:auto; display:flex; gap:10px; align-items:center}
+  select, button, .key{
+    background:var(--elev); color:var(--text); border:1px solid rgba(124,58,237,.25);
+    border-radius:10px; padding:8px 10px; font: inherit;
+  }
+  select:focus, button:focus{outline:2px solid var(--ring); outline-offset:2px}
+  button{cursor:pointer}
+  .ghost{background:transparent; border-color:rgba(107,114,128,.4); color:#cbd5e1}
+  .danger{border-color:rgba(239,68,68,.35); color:#fecaca}
+  .key{min-width:280px}
+
+  /* Chat area */
+  #chat{
+    flex:1; overflow:auto; padding:18px; display:flex; flex-direction:column; gap:14px;
+  }
+  .bubble{
+    display:flex; gap:10px; max-width:900px;
+  }
+  .right{margin-left:auto; flex-direction:row-reverse}
+  .avatar{
+    width:32px; height:32px; border-radius:50%;
+    background:#1f2433; display:grid; place-items:center; font-weight:700;
+    border:1px solid rgba(124,58,237,.25);
+  }
+  .avatar.bot{background:linear-gradient(145deg, #1a1f2b, #0f1320)}
+  .dot{width:6px; height:6px; border-radius:50%; background:#a5b4fc; opacity:.75; animation: blink 1.2s infinite ease-in-out}
+  .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+  @keyframes blink{0%,80%,100%{opacity:.2} 40%{opacity:1}}
+
+  .msg{
+    padding:12px 14px; border-radius:14px; background:var(--panel);
+    border:1px solid rgba(124,58,237,.2); box-shadow:0 10px 24px rgba(0,0,0,.25);
+    white-space:pre-wrap; overflow-wrap:anywhere;
+  }
+  .right .msg{
+    background:linear-gradient(160deg, rgba(124,58,237,.18), rgba(34,211,238,.12));
+    border-color:rgba(124,58,237,.35);
+  }
+
+  /* Composer */
+  .composer{
+    position:sticky; bottom:0; padding:12px; background:linear-gradient(180deg, rgba(12,14,18,.2), rgba(12,14,18,.9));
+    border-top:1px solid rgba(124,58,237,.2); backdrop-filter: blur(8px);
+  }
+  .row{
+    display:flex; gap:10px; align-items:flex-end; max-width:1000px; margin:0 auto;
+  }
+  textarea{
+    flex:1; resize:none; min-height:48px; max-height:200px;
+    background:var(--elev); color:var(--text); border:1px solid rgba(124,58,237,.35);
+    border-radius:12px; padding:12px 12px; font:inherit;
+  }
+  .send{
+    padding:12px 16px; font-weight:600; border-radius:12px;
+    background:linear-gradient(135deg, var(--accent), #5b21b6);
+    border:1px solid rgba(124,58,237,.55); box-shadow: 0 8px 20px rgba(124,58,237,.35);
+  }
+  .send:disabled{opacity:.5; cursor:not-allowed}
+
+  /* Helper text */
+  .footer-hint{
+    text-align:center; color:var(--muted); font-size:12px; margin-top:8px;
+  }
+
+  /* Mobile tweaks */
+  @media (max-width:640px){
+    .controls{display:none}
+    header{justify-content:space-between}
+    #chat{padding:12px}
+    .row{gap:8px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" aria-hidden="true"></div>
+  <div>
+    <div class="brand">Nedits AI</div>
+    <div class="hint">No login · Fast replies · Dark mode</div>
+  </div>
+
+  <div class="controls">
+    <select id="model">
+      <option value="llama-3.1-8b-instant" selected>llama-3.1-8b-instant (Groq)</option>
+      <option value="llama-3.1-70b-versatile">llama-3.1-70b-versatile (Groq)</option>
+    </select>
+    <input id="apiKey" class="key" type="password" placeholder="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">
+    <button id="clearBtn" class="ghost danger" title="Clear conversation">Clear</button>
+  </div>
+</header>
+
+<main id="chat" aria-live="polite" aria-label="Chat history"></main>
+
+<div class="composer">
+  <div class="row">
+    <textarea id="input" placeholder="Type your message… (Enter to send, Shift+Enter for new line)"></textarea>
+    <button id="sendBtn" class="send">Send ▸</button>
+  </div>
+  <div class="footer-hint">Front‑end only demo. Your API key is used directly from the browser.</div>
+</div>
+
+<script>
+  // ---------- Basic Elements ----------
+  const chatEl = document.getElementById('chat');
+  const inputEl = document.getElementById('input');
+  const sendBtn = document.getElementById('sendBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const apiKeyEl = document.getElementById('apiKey');
+  const modelEl = document.getElementById('model');
+
+  // ---------- Helpers ----------
+  function autoResize() {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 200) + 'px';
+  }
+  inputEl.addEventListener('input', autoResize);
+  autoResize();
+
+  function addBubble(role, text, stream = false) {
+    const wrap = document.createElement('div');
+    wrap.className = 'bubble' + (role === 'user' ? ' right' : '');
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar ' + (role === 'bot' ? 'bot' : 'user');
+    avatar.textContent = role === 'user' ? 'You' : 'AI';
+
+    const msg = document.createElement('div');
+    msg.className = 'msg';
+    if (!stream) msg.textContent = text || '';
+
+    wrap.appendChild(avatar);
+    wrap.appendChild(msg);
+    chatEl.appendChild(wrap);
+    chatEl.scrollTop = chatEl.scrollHeight;
+    return msg; // return message node for streaming updates
+  }
+
+  function addTyping() {
+    const wrap = document.createElement('div');
+    wrap.className = 'bubble';
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar bot';
+    avatar.textContent = 'AI';
+    const msg = document.createElement('div');
+    msg.className = 'msg';
+    const dots = document.createElement('div');
+    dots.style.display = 'flex'; dots.style.gap = '6px';
+    dots.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+    msg.appendChild(dots);
+    wrap.appendChild(avatar); wrap.appendChild(msg);
+    chatEl.appendChild(wrap);
+    chatEl.scrollTop = chatEl.scrollHeight;
+    return wrap;
+  }
+
+  function clearChat() {
+    chatEl.innerHTML = '';
+  }
+
+  // ---------- Send Logic (streaming via SSE-like chunks) ----------
+  async function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text) return;
+    const key = apiKeyEl.value.trim();
+    if (!key) { alert('Please paste your Groq API key (demo only).'); return; }
+
+    // UI state
+    sendBtn.disabled = true;
+    const userNode = addBubble('user', text);
+    inputEl.value = ''; autoResize();
+
+    // Typing indicator
+    const typing = addTyping();
+
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${key}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: modelEl.value,
+          messages: [{ role: 'user', content: text }],
+          temperature: 0.7,
+          stream: true
+        })
+      });
+
+      if (!res.ok || !res.body) {
+        typing.remove();
+        addBubble('bot', `⚠️ Error ${res.status}: ${res.statusText}`);
+        sendBtn.disabled = false;
+        return;
+      }
+
+      // Prepare streaming bubble
+      typing.remove();
+      const botNode = addBubble('bot', '', true);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        const lines = buffer.split('\n');
+        // Keep last partial line in buffer
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) continue;
+          const data = trimmed.slice(5).trim();
+
+          if (data === '[DONE]') continue;
+
+          try {
+            const json = JSON.parse(data);
+            const delta = json.choices?.[0]?.delta?.content || '';
+            if (delta) {
+              botNode.textContent += delta;
+              chatEl.scrollTop = chatEl.scrollHeight;
+            }
+          } catch (err) {
+            // ignore JSON parse errors for keep-alives
+          }
+        }
+      }
+
+      // Flush remainder (if any)
+      if (buffer.startsWith('data:')) {
+        try {
+          const json = JSON.parse(buffer.slice(5).trim());
+          const delta = json.choices?.[0]?.delta?.content || '';
+          if (delta) botNode.textContent += delta;
+        } catch {}
+      }
+    } catch (e) {
+      typing.remove();
+      addBubble('bot', '⚠️ Network error: ' + e.message);
+    } finally {
+      sendBtn.disabled = false;
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+  }
+
+  // ---------- Events ----------
+  sendBtn.addEventListener('click', sendMessage);
+  clearBtn.addEventListener('click', clearChat);
+
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // Prefill: optionally remember key in session (commented for safety)
+  // apiKeyEl.value = sessionStorage.getItem('groq_key') || '';
+  // apiKeyEl.addEventListener('input', ()=> sessionStorage.setItem('groq_key', apiKeyEl.value));
+
+  // Warm welcome
+  addBubble('bot', 'Namaste! Main Nedits AI hoon. Mujhse kuch bhi puchhiye—coding, study tips, ya CA prep ✨');
+</script>
+</body>
+</html>
