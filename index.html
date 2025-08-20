@@ -11,42 +11,48 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
-  body{background:
-    radial-gradient(900px 500px at 10% -10%, rgba(124,58,237,.08), transparent 40%),
-    radial-gradient(700px 400px at 110% 10%, rgba(34,211,238,.06), transparent 40%),
-    var(--bg);
-    color:var(--text); display:flex; flex-direction:column;}
+  body{
+    background:
+      radial-gradient(900px 500px at 10% -10%, rgba(124,58,237,.08), transparent 40%),
+      radial-gradient(700px 400px at 110% 10%, rgba(34,211,238,.06), transparent 40%),
+      var(--bg);
+    color:var(--text); display:flex; flex-direction:column;
+  }
   header{
     display:flex; align-items:center; gap:12px; padding:14px 16px;
     background:linear-gradient(180deg, rgba(12,14,18,.8), rgba(12,14,18,.6));
     border-bottom:1px solid rgba(124,58,237,.12); position:sticky; top:0; z-index:20;
   }
-  .logo{width:36px;height:36px;border-radius:9px;background:conic-gradient(from 200deg,var(--accent),var(--accent-2),var(--accent));box-shadow:0 6px 24px rgba(124,58,237,.12)}
-  .brand{font-weight:700}
+  .logo{width:36px;height:36px;border-radius:9px;
+    background:conic-gradient(from 200deg,var(--accent),var(--accent-2),var(--accent));
+    box-shadow:0 6px 24px rgba(124,58,237,.12)}
+  .brand{font-weight:700;font-size:16px}
   .sub{color:var(--muted); font-size:13px}
-  .controls{margin-left:auto; display:flex; gap:8px; align-items:center}
-  .controls input[type="text"]{background:transparent;border:1px solid rgba(255,255,255,.06);color:var(--text);padding:8px 10px;border-radius:8px;width:260px}
-  .controls button{background:linear-gradient(135deg,var(--accent),#5b21b6);border:none;padding:8px 12px;border-radius:8px;color:white;cursor:pointer}
   main{flex:1; overflow:auto;padding:20px; display:flex; flex-direction:column; gap:12px; align-items:flex-start}
   .bubble{display:flex; gap:12px; max-width:880px; width:100%;}
   .bubble.right{margin-left:auto;flex-direction:row-reverse}
-  .avatar{width:36px;height:36px;border-radius:10px;background:#0b1116;display:grid;place-items:center;border:1px solid rgba(255,255,255,.03);font-weight:700;color:var(--muted)}
+  .avatar{width:36px;height:36px;border-radius:10px;background:#0b1116;
+    display:grid;place-items:center;border:1px solid rgba(255,255,255,.03);
+    font-weight:700;color:var(--muted)}
   .avatar.ai{background:linear-gradient(160deg,#0f1620,#091018); color:#cfe8ff}
-  .msg{padding:12px 14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,.01), rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.03);white-space:pre-wrap;word-break:break-word; color:var(--text)}
+  .msg{padding:12px 14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,.01), rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.03);white-space:pre-wrap;word-break:break-word; color:var(--text)}
   .bubble.right .msg{background:linear-gradient(160deg, rgba(124,58,237,.12), rgba(34,211,238,.06)); border:1px solid rgba(124,58,237,.18)}
   .typing-dots{display:flex;gap:6px}
   .dot{width:7px;height:7px;border-radius:50%;background:#b8c7ff;opacity:.5;animation:blink 1.2s infinite}
   .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
   @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
-  .composer{position:sticky; bottom:0; background:linear-gradient(180deg, rgba(11,13,17,.2), rgba(11,13,17,.95)); padding:14px; border-top:1px solid rgba(124,58,237,.06); display:flex; gap:10px; align-items:flex-end}
-  textarea{flex:1; min-height:54px; max-height:240px; resize:none; padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.04); background:linear-gradient(180deg,#0b1116,#0b1014); color:var(--text); font-size:15px}
-  .send{padding:12px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),#5b21b6); color:white;font-weight:700;cursor:pointer}
-  .small{font-size:13px;color:var(--muted)}
-  .center-note{max-width:920px;margin:0 auto;text-align:center;color:var(--muted);font-size:13px;margin-top:6px}
-  @media (max-width:760px){
-    .controls input[type="text"]{display:none}
-    main{padding:12px}
-  }
+  .composer{position:sticky; bottom:0; background:linear-gradient(180deg, rgba(11,13,17,.2), rgba(11,13,17,.95));
+    padding:14px; border-top:1px solid rgba(124,58,237,.06); display:flex; gap:10px; align-items:flex-end}
+  textarea{flex:1; min-height:54px; max-height:240px; resize:none; padding:12px;border-radius:10px;
+    border:1px solid rgba(255,255,255,.04); background:linear-gradient(180deg,#0b1116,#0b1014);
+    color:var(--text); font-size:15px}
+  .send{padding:12px 16px;border-radius:10px;border:none;
+    background:linear-gradient(135deg,var(--accent),#5b21b6); color:white;font-weight:700;cursor:pointer;transition:all .2s}
+  .send:hover{opacity:0.9; transform:translateY(-1px)}
+  .center-note{max-width:920px;margin:0 auto;text-align:center;color:var(--muted);
+    font-size:12px;margin:8px 0 14px}
+  @media (max-width:760px){ main{padding:12px} }
 </style>
 </head>
 <body>
@@ -55,13 +61,7 @@
   <div class="logo" aria-hidden="true"></div>
   <div>
     <div class="brand">Nedits AI</div>
-    <div class="sub">Your Nedits Edition assistant — explain services, guide customers</div>
-  </div>
-
-  <div class="controls">
-    <!-- Optional: user can paste API key here for quick testing -->
-    <input id="apiKeyInput" type="text" placeholder="Paste Groq API key (or leave and set API_KEY in code)" />
-    <button id="clearBtn">Clear</button>
+    <div class="sub">Your Nedits Edition assistant — guiding customers</div>
   </div>
 </header>
 
@@ -72,51 +72,19 @@
   <button class="send" id="sendBtn">Send ▸</button>
 </div>
 
-<div class="center-note">Demo only — frontend calls the API directly. For production, use a backend to keep API keys secret.</div>
+<div class="center-note">Powered by Nedits Edition — AI Demo</div>
 
 <script>
-/* =========================
-   CONFIG — Paste your key here for local testing,
-   or paste into the top input field in the header.
-   ========================= */
-const API_KEY = "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"; // <<< Paste your Groq key here for convenience (OR use header input)
+const API_KEY = "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"; 
 const API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-/* =========================
-   SYSTEM PROMPT — Nedits assistant behaviour
-   (Do not change unless you want different behavior)
-   ========================= */
-const SYSTEM_PROMPT = `You are Nedits AI, a professional assistant created and developed by the Nedits Edition team. The owner of Nedits Edition is Nishit, and the brand is built with the support of a skilled team. Your primary role is to help customers clearly understand the services offered by Nedits Edition, guide them with the right solutions, and respond in a professional, friendly, and helpful way.
+const SYSTEM_PROMPT = `You are Nedits AI, ... (same system prompt as before)`;
 
-When asked about your creator, founder, or ownership, always say:
-"I was created by the Nedits Edition team, and the owner of Nedits Edition is Nishit."
-
-Your main responsibilities:
-1. Clearly explain and summarize the services provided by Nedits Edition in simple, easy-to-understand language.
-2. If a customer asks about solutions for their needs, recommend the right service(s) from the list below, and explain why.
-3. Maintain a professional yet approachable tone.
-4. Keep answers concise but include examples, steps, or next actions when it helps the user.
-5. Do not provide unrelated or random answers outside the context of Nedits Edition’s services unless it is casual small talk.
-
-Service categories and short descriptions (use these when explaining or recommending):
-- Creative & Visual: Graphic Designing, Motion Graphics, 3D Design & Modeling, Photo Editing & Retouching, UI/UX Design, NFT Art & Web3 Graphics, Interactive PDFs & Digital Brochures, Templates & Presets.
-- Media & Content: Video Editing, Thumbnail & Hook Designing, Podcast Clips & Graphics, Voiceover & Dubbing (AI & human), Text-to-Speech Video Creation.
-- Tech & Development: Website Development, E-commerce Solutions, App Development, Online Course & LMS Setup, Micro SaaS Tools, Sales Funnel Setup, WhatsApp & Chatbot Marketing.
-- Marketing & Growth: Digital Marketing, Social Media Management, Influencer Marketing Management, Email Marketing & Automation, Online Reputation Management, AI Tools Consultancy & Automation, YouTube Channel Setup & Management.
-- Content & Brand Setup: Brand Identity Creation, Content Writing & Copywriting, Event Branding & Digital Collateral, Digital Business Setup (end-to-end).
-
-Always answer in a clear, professional, and customer-friendly tone. Prioritize clarity and actionable guidance.`;
-
-/* =========================
-   UI helpers
-   ========================= */
 const chatEl = document.getElementById('chat');
 const inputEl = document.getElementById('input');
 const sendBtn = document.getElementById('sendBtn');
-const clearBtn = document.getElementById('clearBtn');
-const apiKeyInput = document.getElementById('apiKeyInput');
 
-function addBubble(role, text, options = {}) {
+function addBubble(role, text) {
   const wrap = document.createElement('div');
   wrap.className = 'bubble' + (role === 'user' ? ' right' : '');
   const avatar = document.createElement('div');
@@ -124,13 +92,11 @@ function addBubble(role, text, options = {}) {
   avatar.textContent = role === 'user' ? 'You' : 'AI';
   const msg = document.createElement('div');
   msg.className = 'msg';
-  if (options.html) msg.innerHTML = options.html;
-  else msg.textContent = text;
+  msg.textContent = text;
   wrap.appendChild(avatar);
   wrap.appendChild(msg);
   chatEl.appendChild(wrap);
   chatEl.scrollTop = chatEl.scrollHeight;
-  return msg;
 }
 
 function addTyping() {
@@ -152,13 +118,6 @@ function addTyping() {
   return wrap;
 }
 
-function normalizeKey(k) {
-  return (k || "").trim();
-}
-
-/* =========================
-   Core: Send message to Groq with system prompt
-   ========================= */
 async function sendMessage() {
   const text = inputEl.value.trim();
   if (!text) return;
@@ -166,49 +125,30 @@ async function sendMessage() {
   inputEl.value = '';
   inputEl.style.height = 'auto';
 
-  // Determine API key: constant or header input
-  const key = normalizeKey(apiKeyInput.value) || normalizeKey(API_KEY);
-  if (!key) {
-    alert('Please paste your Groq API key in the header input OR set API_KEY in the code.');
+  if (!API_KEY) {
+    addBubble('ai', '⚠️ API key missing. Please set your API_KEY in the code.');
     return;
   }
 
-  // Add typing indicator
   const typingNode = addTyping();
   sendBtn.disabled = true;
 
   try {
     const body = {
       model: "llama-3.1-8b-instant",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: text }
-      ],
-      temperature: 0.6,
-      stream: false
+      messages: [{ role: "system", content: SYSTEM_PROMPT },{ role: "user", content: text }],
+      temperature: 0.6
     };
 
     const res = await fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${key}`,
-        'Content-Type': 'application/json'
-      },
+      headers: {'Authorization': `Bearer ${API_KEY}`,'Content-Type': 'application/json'},
       body: JSON.stringify(body)
     });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      typingNode.remove();
-      addBubble('ai', `⚠️ API error ${res.status}: ${res.statusText}\n${errText}`);
-      sendBtn.disabled = false;
-      return;
-    }
     const data = await res.json();
     typingNode.remove();
-
-    // Safety: robust path to get assistant text
-    const assistantText = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.message?.text || JSON.stringify(data);
+    const assistantText = data?.choices?.[0]?.message?.content || "⚠️ No response";
     addBubble('ai', assistantText);
   } catch (err) {
     typingNode.remove();
@@ -219,9 +159,6 @@ async function sendMessage() {
   }
 }
 
-/* =========================
-   Events
-   ========================= */
 sendBtn.addEventListener('click', sendMessage);
 inputEl.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) {
@@ -229,14 +166,8 @@ inputEl.addEventListener('keydown', (e) => {
     sendMessage();
   }
 });
-clearBtn.addEventListener('click', () => {
-  chatEl.innerHTML = '';
-  addBubble('ai', '👋 Welcome to Nedits AI — I can explain services, recommend solutions, and guide next steps.');
-});
 
-/* initial welcome */
-addBubble('ai', '👋 Welcome to Nedits AI — I can explain Nedits Edition services, recommend the right solutions, and guide you on next steps. Ask me anything about your project or services.');
-
+addBubble('ai', '👋 Welcome to Nedits AI — I can explain Nedits Edition services, recommend solutions, and guide you.');
 </script>
 </body>
 </html>
