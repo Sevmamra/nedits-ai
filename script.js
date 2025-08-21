@@ -1,9 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // CONFIGURATION & API DETAILS
-    // Ab hum client-side se sidha API ko call nahi karenge.
-    // Iski jagah, hum Vercel par bane serverless function ko call karenge.
-    const API_URL = '/api/chat'; 
+    // Gemini API ke liye ye naye variables hain
+    const API_KEY = "AIzaSyDYe_vdjBBjyXjgs1vB2_UGpjrmaomj2TE"; 
+    const MODEL_NAME = "gemini-1.5-flash-latest";
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
     let SYSTEM_PROMPT = '';
 
     // DOM ELEMENT REFERENCES
@@ -200,20 +201,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const historyForAPI = chats[activeChatId].messages.map(msg => ({
-                role: msg.role === 'user' ? 'user' : 'assistant',
-                content: msg.content
+                role: msg.role === 'user' ? 'user' : 'model',
+                parts: [{ text: msg.content }]
             }));
             
-            // System prompt ko conversation ke shuru mein add karein
-            historyForAPI.unshift({
-                role: 'system',
-                content: SYSTEM_PROMPT
-            });
-
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ messages: historyForAPI })
+                body: JSON.stringify({
+                    contents: historyForAPI,
+                    // system_instruction: { parts: [{ text: SYSTEM_PROMPT }] } // Gemini-1.5-flash-latest does not support system_instruction
+                })
             });
 
             if (!response.ok) {
@@ -222,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            fullResponse = data.response;
+            fullResponse = data.candidates[0].content.parts[0].text;
 
             aiMsgElement.innerHTML = marked.parse(fullResponse);
             aiMsgElement.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
@@ -231,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Error during API call:', error);
-            aiMsgElement.innerHTML = `Oops! I couldn't process your request right now. This is a common issue with front-end API calls due to security policies. The most reliable solution is to use a server-side proxy. If the issue persists, you can contact us directly at <a href="mailto:neditsedition@gmail.com">neditsedition@gmail.com</a>.`;
+            aiMsgElement.innerHTML = `Oops! I couldn't process your request right now. This is a common issue with front-end API calls due to rate limits or security policies. The most reliable solution is to use a server-side proxy. If the issue persists, you can contact us directly at <a href="mailto:neditsedition@gmail.com">neditsedition@gmail.com</a>.`;
         } finally {
             sendBtn.disabled = false;
             saveState();
