@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // CONFIGURATION & API DETAILS
-    const API_KEY = "YOUR_API_KEY_HERE"; // Replace this with your actual API key
+    const API_KEY = "AIzaSyDYe_vdjBBjyXjgs1vB2_UGpjrmaomj2TE"; // Replace this with your actual API key
     const MODEL_NAME = "gemini-1.5-flash-latest";
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:streamGenerateContent?alt=sse`;
     let SYSTEM_PROMPT = '';
