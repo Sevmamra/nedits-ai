@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // CONFIGURATION & API DETAILS
-    // DeepSeek API ke liye ye naye variables hain
+    // Dhyaan dein: DeepSeek API key ab client-side code mein hai.
+    // This is NOT recommended for production.
     const API_KEY = "sk-88b41f8a6dc2457c9ad1840bd210fc7b"; // Aapki asli key yahan daalen
     const API_URL = "https://api.deepseek.com/v1/chat/completions";
     const MODEL_NAME = "deepseek-chat";
@@ -219,7 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({
                     model: MODEL_NAME,
-                    messages: historyForAPI
+                    messages: historyForAPI,
+                    stream: false // Streaming ko off rakha hai
                 })
             });
 
@@ -238,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Error during API call:', error);
-            aiMsgElement.innerHTML = `Oops! I couldn't process your request right now. Please try again later. If the issue persists, you can contact us directly at <a href="mailto:neditsedition@gmail.com">neditsedition@gmail.com</a>.`;
+            aiMsgElement.innerHTML = `Oops! I couldn't process your request right now. This is a common issue with front-end API calls due to security policies. The most reliable solution is to use a server-side proxy. If the issue persists, you can contact us directly at <a href="mailto:neditsedition@gmail.com">neditsedition@gmail.com</a>.`;
         } finally {
             sendBtn.disabled = false;
             saveState();
