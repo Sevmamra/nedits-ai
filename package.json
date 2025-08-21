@@ -1,0 +1,15 @@
+{
+  "name": "nedits-ai-api",
+  "version": "1.0.0",
+  "description": "API for Nedits AI on Vercel.",
+  "main": "api/chat.js",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "openai": "^4.0.0"
+  },
+  "devDependencies": {
+    "vercel": "^34.2.0"
+  }
+}
