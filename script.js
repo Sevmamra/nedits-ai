@@ -1,11 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // CONFIGURATION & API DETAILS
-    // Dhyaan dein: DeepSeek API key ab client-side code mein hai.
-    // This is NOT recommended for production.
-    const API_KEY = "sk-88b41f8a6dc2457c9ad1840bd210fc7b"; // Aapki asli key yahan daalen
-    const API_URL = "https://api.deepseek.com/v1/chat/completions";
-    const MODEL_NAME = "deepseek-chat";
+    // Ab hum client-side se sidha API ko call nahi karenge.
+    // Iski jagah, hum Vercel par bane serverless function ko call karenge.
+    const API_URL = '/api/chat'; 
     let SYSTEM_PROMPT = '';
 
     // DOM ELEMENT REFERENCES
@@ -214,15 +212,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const response = await fetch(API_URL, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: MODEL_NAME,
-                    messages: historyForAPI,
-                    stream: false // Streaming ko off rakha hai
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages: historyForAPI })
             });
 
             if (!response.ok) {
@@ -231,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            fullResponse = data.choices[0].message.content;
+            fullResponse = data.response;
 
             aiMsgElement.innerHTML = marked.parse(fullResponse);
             aiMsgElement.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
