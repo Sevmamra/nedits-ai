@@ -1,10 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // CONFIGURATION & API DETAILS
-    // Gemini API ke liye ye naye variables hain
-    const API_KEY = "AIzaSyDYe_vdjBBjyXjgs1vB2_UGpjrmaomj2TE"; 
+    const API_KEY = "YOUR_API_KEY_HERE"; // Replace this with your actual API key
     const MODEL_NAME = "gemini-1.5-flash-latest";
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:streamGenerateContent?alt=sse`;
     let SYSTEM_PROMPT = '';
 
     // DOM ELEMENT REFERENCES
@@ -32,8 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             SYSTEM_PROMPT = data.system_prompt;
             renderPromptSuggestions(data.suggestions);
+            API_KEY = "YOUR_API_KEY_HERE"; // Ensure this is replaced with your real key
         } catch (error) {
             console.error('Failed to load configuration:', error);
+            // Handle fatal error, maybe show a message to the user
         }
     }
 
@@ -196,31 +197,59 @@ document.addEventListener('DOMContentLoaded', () => {
             renderSidebar();
         }
 
-        const aiMsgElement = addBubble('ai', '<span class="typing"></span>');
+        const aiMsgElement = addBubble('ai', '<i class="fa-solid fa-spinner fa-spin"></i>');
         let fullResponse = '';
 
         try {
-            const historyForAPI = chats[activeChatId].messages.map(msg => ({
-                role: msg.role === 'user' ? 'user' : 'model',
-                parts: [{ text: msg.content }]
-            }));
+            const historyForAPI = [
+                { role: "user", parts: [{ text: SYSTEM_PROMPT }] },
+                { role: "model", parts: [{ text: "Understood. I will act as Nedits AI, the expert and growth partner." }] }
+            ];
             
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: historyForAPI,
-                    // system_instruction: { parts: [{ text: SYSTEM_PROMPT }] } // Gemini-1.5-flash-latest does not support system_instruction
-                })
+            chats[activeChatId].messages.forEach(msg => {
+                historyForAPI.push({
+                    role: msg.role === 'user' ? 'user' : 'model',
+                    parts: [{ text: msg.content }]
+                });
             });
 
+            aiMsgElement.innerHTML = `<span class="typing"></span>`;
+
+            const response = await fetch(API_URL.replace('YOUR_API_KEY_HERE', API_KEY), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-goog-api-key': API_KEY },
+                body: JSON.stringify({ contents: historyForAPI })
+            });
+            
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorData.message}`);
+                throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorData.error.message}`);
             }
 
-            const data = await response.json();
-            fullResponse = data.candidates[0].content.parts[0].text;
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            aiMsgElement.innerHTML = '';
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+                
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const jsonStr = line.substring(6);
+                        try {
+                            const data = JSON.parse(jsonStr);
+                            const textChunk = data.candidates[0]?.content?.parts[0]?.text || '';
+                            fullResponse += textChunk;
+                            aiMsgElement.innerHTML = marked.parse(fullResponse) + ' <span class="typing"></span>';
+                        } catch (e) {}
+                    }
+                }
+                messageListEl.parentElement.scrollTop = messageListEl.parentElement.scrollHeight;
+            }
 
             aiMsgElement.innerHTML = marked.parse(fullResponse);
             aiMsgElement.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
@@ -229,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Error during API call:', error);
-            aiMsgElement.innerHTML = `Oops! I couldn't process your request right now. This is a common issue with front-end API calls due to rate limits or security policies. The most reliable solution is to use a server-side proxy. If the issue persists, you can contact us directly at <a href="mailto:neditsedition@gmail.com">neditsedition@gmail.com</a>.`;
+            aiMsgElement.innerHTML = `Oops! I couldn't process your request right now. Please try again later. If the issue persists, you can contact us directly at <a href="mailto:neditsedition@gmail.com">neditsedition@gmail.com</a>.`;
         } finally {
             sendBtn.disabled = false;
             saveState();
