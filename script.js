@@ -1,9 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // CONFIGURATION & API DETAILS
-    const API_KEY = "AIzaSyDYe_vdjBBjyXjgs1vB2_UGpjrmaomj2TE"; // Replace this with your actual API key
-    const MODEL_NAME = "gemini-1.5-flash-latest";
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:streamGenerateContent?alt=sse`;
+    // DeepSeek API ke liye ye naye variables hain
+    const API_KEY = "sk-88b41f8a6dc2457c9ad1840bd210fc7b"; // Aapki asli key yahan daalen
+    const API_URL = "https://api.deepseek.com/v1/chat/completions";
+    const MODEL_NAME = "deepseek-chat";
     let SYSTEM_PROMPT = '';
 
     // DOM ELEMENT REFERENCES
@@ -31,10 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             SYSTEM_PROMPT = data.system_prompt;
             renderPromptSuggestions(data.suggestions);
-            API_KEY = "YOUR_API_KEY_HERE"; // Ensure this is replaced with your real key
         } catch (error) {
             console.error('Failed to load configuration:', error);
-            // Handle fatal error, maybe show a message to the user
         }
     }
 
@@ -197,59 +196,40 @@ document.addEventListener('DOMContentLoaded', () => {
             renderSidebar();
         }
 
-        const aiMsgElement = addBubble('ai', '<i class="fa-solid fa-spinner fa-spin"></i>');
+        const aiMsgElement = addBubble('ai', '<span class="typing"></span>');
         let fullResponse = '';
 
         try {
-            const historyForAPI = [
-                { role: "user", parts: [{ text: SYSTEM_PROMPT }] },
-                { role: "model", parts: [{ text: "Understood. I will act as Nedits AI, the expert and growth partner." }] }
-            ];
+            const historyForAPI = chats[activeChatId].messages.map(msg => ({
+                role: msg.role === 'user' ? 'user' : 'assistant',
+                content: msg.content
+            }));
             
-            chats[activeChatId].messages.forEach(msg => {
-                historyForAPI.push({
-                    role: msg.role === 'user' ? 'user' : 'model',
-                    parts: [{ text: msg.content }]
-                });
+            // System prompt ko conversation ke shuru mein add karein
+            historyForAPI.unshift({
+                role: 'system',
+                content: SYSTEM_PROMPT
             });
 
-            aiMsgElement.innerHTML = `<span class="typing"></span>`;
-
-            const response = await fetch(API_URL.replace('YOUR_API_KEY_HERE', API_KEY), {
+            const response = await fetch(API_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-goog-api-key': API_KEY },
-                body: JSON.stringify({ contents: historyForAPI })
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: MODEL_NAME,
+                    messages: historyForAPI
+                })
             });
-            
+
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorData.error.message}`);
+                throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorData.message}`);
             }
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            aiMsgElement.innerHTML = '';
-
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                
-                const chunk = decoder.decode(value);
-                const lines = chunk.split('\n');
-                
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const jsonStr = line.substring(6);
-                        try {
-                            const data = JSON.parse(jsonStr);
-                            const textChunk = data.candidates[0]?.content?.parts[0]?.text || '';
-                            fullResponse += textChunk;
-                            aiMsgElement.innerHTML = marked.parse(fullResponse) + ' <span class="typing"></span>';
-                        } catch (e) {}
-                    }
-                }
-                messageListEl.parentElement.scrollTop = messageListEl.parentElement.scrollHeight;
-            }
+            const data = await response.json();
+            fullResponse = data.choices[0].message.content;
 
             aiMsgElement.innerHTML = marked.parse(fullResponse);
             aiMsgElement.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
